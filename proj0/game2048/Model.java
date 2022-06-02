@@ -5,7 +5,8 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Guanyu Ding
+ * @email lding1003@gmail.com
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -110,10 +111,41 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
+        // Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        board.setViewingPerspective(side);
+        int size = board.size();
+        // 首先获取每一列，从左往右
+        for (int col = 0; col < size; col++) {
+            // 之后双指针从后面走
+            int i = size - 1;
+            for (int j = i - 1; j >= 0; j--) {
+                Tile t = board.tile(col, j);
+                // t 位置的这个 tile 不是 null，就需要判断移动的情况
+                if (t != null) {
+                    Tile successor = board.tile(col, i);
+                    // 当 i 位置为 null 时，直接把 t 位置的 tile 挪过去
+                    if (successor == null) board.move(col, i, t);
+                    // 如果 i 位置的 tile 存在，那么就比较两个 tile 是否相等
+                    else {
+                        // 合并
+                        if (successor.value() == t.value()) {
+                            board.move(col, i, t);
+                            i--;
+                            score += t.value() * 2;
+                        }
+                        // 先把 i 往下移，然后在把 t 移到新的 i 的位置，有可能是 2 0 4 8 这种情况，也有可能是 2 4 8 16
+                        else {
+                            i--;
+                            board.move(col, i, t);
+                        }
+                    }
+                    changed = true;
+                }
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -137,7 +169,12 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (b.tile(i, j) == null) return true;
+            }
+        }
         return false;
     }
 
@@ -147,7 +184,14 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                Tile t = b.tile(i, j);
+                if (t != null && t.value() == MAX_PIECE) return true;
+            }
+        }
+
         return false;
     }
 
@@ -158,7 +202,38 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        int[][] offsets = new int[][]{{0, 1}, {1, 0}};
+
+        /** Worst method: use emptySpaceExists() to check at first, and iterate all tiles and compare it with other tiles
+         *  at other four directions
+         *  Better method: iterate all tile only one time, return true when:
+         *  1. get any empty tiles or
+         *  2. get any empty adjacent tiles
+         *  3. the tile's value is same as other adjacent tiles
+         *  Best method: we only need to compare two tiles ont time. For example, if we already check
+         *  tile(0, 0) and tile(0, 1), then, when we reach tile(0, 1), it is not necessary to check with
+         *  tile(0, 0) again. If we iterate the 2D array from bot to top, left to right, then we only need
+         *  to compare each tile with its right tile and top tile.
+         */
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                Tile t = b.tile(i, j);
+                if (t == null) return true;
+                for (int[] offset : offsets) {
+                    int ti = i + offset[0];
+                    int tj = j + offset[1];
+                    // emptySpaceExists(b) already make sure there are no empty tiles
+                    // so there will be no NullPointerException
+                    if (ti >= 0 && ti < size && tj >= 0 && tj < size) {
+                        Tile adTile = b.tile(ti, tj);
+                        if (adTile ==  null) return true;
+                        if (adTile.value() == t.value()) return true;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 

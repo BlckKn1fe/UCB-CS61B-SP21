@@ -34,6 +34,7 @@ public class Game {
             boolean moved;
             moved = false;
             while (!moved) {
+                // 注意这里：如果系统是中文这里识别不到，把语言设置成英文就行了，或者自己加 case 向上（左下右）箭头
                 String cmnd = _source.getKey();
                 switch (cmnd) {
                     case "Quit":
