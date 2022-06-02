@@ -3,7 +3,12 @@
  */
 public class Collatz {
 
-    /** Buggy implementation of nextNumber! */
+    /**
+     * If n is even, the next number is n/2.
+     * If n is odd, the next number is 3n + 1.
+     * @param n is the input number
+     * @return the next expected number
+     */
     public static int nextNumber(int n) {
         // when n is even
         if (n % 2 == 0) {
