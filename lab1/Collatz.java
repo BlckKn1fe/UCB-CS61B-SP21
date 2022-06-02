@@ -5,12 +5,13 @@ public class Collatz {
 
     /** Buggy implementation of nextNumber! */
     public static int nextNumber(int n) {
-        if (n  == 128) {
-            return 1;
-        } else if (n == 5) {
+        // when n is even
+        if (n % 2 == 0) {
+            return n / 2;
+        }
+        // when n is odd
+        else {
             return 3 * n + 1;
-        } else {
-            return n * 2;
         }
     }
 
